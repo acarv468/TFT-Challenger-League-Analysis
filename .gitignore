@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 # .gitignore
 .env# Byte-compiled / optimized / DLL files
+=======
+# Byte-compiled / optimized / DLL files
+>>>>>>> b9e89c99c79dddc34c4c6a4213695fb579e97626
 __pycache__/
 *.py[cod]
 *$py.class
@@ -169,4 +173,8 @@ cython_debug/
 #.idea/
 
 # PyPI configuration file
+<<<<<<< HEAD
 .pypirc
+=======
+.pypirc
+>>>>>>> b9e89c99c79dddc34c4c6a4213695fb579e97626

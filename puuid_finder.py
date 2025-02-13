@@ -8,9 +8,17 @@ from collections import defaultdict
 import psycopg2
 from config import config
 from datetime import datetime
+from dotenv import load_dotenv
+import os
 
-# Update with your new API key
-api_key = 'RGAPI-f0d96560-686a-4514-87cb-5b01c0bf1abe'
+# Load environment variables from .env file
+load_dotenv()
+
+## Riot Details
+api_key = os.getenv('RIOT_API_KEY')
+print(f"Loaded API Key: {api_key}")  # Debugging statement
+if not api_key:
+    raise ValueError("API key must be set in the .env file")
 region = 'americas'
 summoner_name = 'WizardHatDave'
 tagline = '1111'
