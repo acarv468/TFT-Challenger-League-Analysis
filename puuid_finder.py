@@ -20,8 +20,8 @@ print(f"Loaded API Key: {api_key}")  # Debugging statement
 if not api_key:
     raise ValueError("API key must be set in the .env file")
 region = 'americas'
-summoner_name = 'WizardHatDave'
-tagline = '1111'
+summoner_name = 'waxade'
+tagline = 'na1'
 
 # To get PUUID from Riot ID and tagline
 # Construct the URL for the endpoint
