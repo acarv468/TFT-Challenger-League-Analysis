@@ -1,3 +1,4 @@
 plotly==6.0.0
-psycopg2==2.9.10
+psycopg2-binary
 sqlalchemy==2.0.38
+streamlit
