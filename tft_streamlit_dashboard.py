@@ -3,8 +3,10 @@ import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 from config import config
-import altair as alt
 import plotly.express as px
+
+# Set the page layout to wide
+st.set_page_config(layout="wide")
 
 # Streamlit title
 st.title('TFT Stats Dashboard')
@@ -45,53 +47,90 @@ query = '''
 # Get data from the database
 data = get_data_from_db(query)
 
-# Display the data in Streamlit
-st.write(data)
+# Calculate KPIs
+average_placement = data['placement'].mean()
+total_damage = data['total_damage_to_players'].mean()
+average_gold_left = data['gold_left'].mean()
+total_players_eliminated = data['players_eliminated'].mean()
+average_win_pct = (data['win'].sum() / len(data)) * 100
 
-# Check for data issues
-st.write("Data types:")
-st.write(data.dtypes)
+# Display KPI callout cards in columns
+col1, col2, col3, col4, col5 = st.columns(5)
+col1.metric(label="Average Placement", value=f"{average_placement:.2f}")
+col2.metric(label="Win Percentage", value=f"{average_win_pct:.2f}%")
+col3.metric(label="Average Damage to Players", value=f"{total_damage:.2f}")
+col4.metric(label="Average Gold Left", value=f"{average_gold_left:.2f}")
+col5.metric(label="Average Players Eliminated", value=f"{total_players_eliminated:.2f}")
 
-# Create a custom scatter chart with altair
-scatter_chart = alt.Chart(data).mark_circle(size=60).encode(
-    x=alt.X('total_damage_to_players', scale=alt.Scale(domain=[0, 100])),
-    y=alt.Y('placement', scale=alt.Scale(domain=[1, 8])),
-    color='riotidgamename',
-    tooltip=['riotidgamename', 'total_damage_to_players', 'placement', 'p_match_id']
-).properties(
-    width=600,
-    height=400
-).interactive()
-
-# Simplified bar chart for debugging with Altair
-bar_chart_altair = alt.Chart(data).mark_bar().encode(
-    x='game_datetime:T',
-    y='placement:Q',
-    color='riotidgamename'
-).properties(
-    width=600,
-    height=400
-).interactive()
-
-# Create a custom bar chart with Plotly
-bar_chart_plotly = px.bar(
+# Create a custom scatter plot with Plotly
+scatter_plot1 = px.scatter(
     data,
-    x='game_datetime',
+    x='total_damage_to_players',
     y='placement',
     color='riotidgamename',
-    title='Bar Chart of Placement over Time'
+    hover_data=['riotidgamename', 'total_damage_to_players', 'placement', 'p_match_id'],
+    title='Scatter Plot of Total Damage to Players vs Placement'
 )
-bar_chart_plotly.update_layout(
-    xaxis_title='Game Date',
+scatter_plot1.update_layout(
+    xaxis_title='Total Damage to Players',
     yaxis_title='Placement',
     yaxis=dict(range=[8, 1])  # Reverse the y-axis to have 1 at the top
 )
 
-# Display the custom scatter chart in Streamlit
-st.altair_chart(scatter_chart, use_container_width=True)
+# Create a custom scatter plot with Plotly
+scatter_plot2 = px.scatter(
+    data,
+    x='gold_left',
+    y='placement',
+    color='riotidgamename',
+    hover_data=['riotidgamename', 'gold_left', 'placement', 'p_match_id'],
+    title='Scatter Plot of Gold Left vs Placement'
+)
+scatter_plot2.update_layout(
+    xaxis_title='Gold Remaining',
+    yaxis_title='Placement',
+    yaxis=dict(range=[8, 1])  # Reverse the y-axis to have 1 at the top
+)
 
-# Display the custom bar chart with Altair in Streamlit
-st.altair_chart(bar_chart_altair, use_container_width=True)
+# Create a custom scatter plot with Plotly
+scatter_plot3 = px.scatter(
+    data,
+    x='last_round',
+    y='placement',
+    color='riotidgamename',
+    hover_data=['riotidgamename', 'last_round', 'placement', 'p_match_id'],
+    title='Scatter Plot of Last Round vs Placement'
+)
+scatter_plot3.update_layout(
+    xaxis_title='Last Round',
+    yaxis_title='Placement',
+    yaxis=dict(range=[8, 1])  # Reverse the y-axis to have 1 at the top
+)
 
-# Display the custom bar chart with Plotly in Streamlit
-st.plotly_chart(bar_chart_plotly, use_container_width=True)
+# Create a custom scatter plot with Plotly
+scatter_plot4 = px.scatter(
+    data,
+    x='players_eliminated',
+    y='placement',
+    color='riotidgamename',
+    hover_data=['riotidgamename', 'players_eliminated', 'placement', 'p_match_id'],
+    title='Scatter Plot of Players Eliminated vs Placement'
+)
+scatter_plot4.update_layout(
+    xaxis_title='Players Eliminated',
+    yaxis_title='Placement',
+    yaxis=dict(range=[8, 1])  # Reverse the y-axis to have 1 at the top
+)
+
+# Create two columns for scatter plots
+scatter_col1, scatter_col2 = st.columns(2)
+
+# Display the custom scatter plots with Plotly in Streamlit
+scatter_col1.plotly_chart(scatter_plot1, use_container_width=True)
+scatter_col1.plotly_chart(scatter_plot2, use_container_width=True)
+scatter_col2.plotly_chart(scatter_plot3, use_container_width=True)
+scatter_col2.plotly_chart(scatter_plot4, use_container_width=True)
+
+# Display the data in Streamlit
+st.write(data)
+
