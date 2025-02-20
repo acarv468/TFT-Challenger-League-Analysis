@@ -23,6 +23,13 @@ if not api_key:
 watcher = TftWatcher(api_key)
 region = 'na1'
 
+puuid_list = [
+    'IqE3AGiAsBfKo44yi6SDC5N31XSRkQYoDtVNdeVYd6AjZoX0HM-0TdbnhLYP01hVrrEpFZmn1NDL9g',
+    'qiQLis_3Zapl6oxI8oHEbnuivAWoy3uRH06ToRLObMje4IUOKON-YK8TgHhqR-ed-OBQ_6Ei5gCVZg',
+    'COBBLmcIDuaarBHiGr_iFHjaeEw44q94z-sEuW2d-EEmraG3JR4_dxwELOl2qXlIpTwPglfc38zbrg',
+    'AbTNQqyAMULCRJNK5n7DNFwkdl4cMbDWOCN-N4dwno2FPmFhZQL4T7f245YUvpqqJgf7NZrx7vR5LA',
+    'Yw9FTrjrd-ODWl2o4dyAqW9mU_e7SHXzFGOfpRG_JkpMHxqHZpZLHO3pbtQ9b10sRbbCREgaU7A-_A']
+
 def connect(callback):
     connection = None
     try:
@@ -75,83 +82,77 @@ def construct_data_groups(puuid, region):
         connect(insert_match_data)
 
         for participant in match['info']['participants']:
-            partner_group_id = participant.get('partner_group_id', None)
-            participants_data = {
-                'puuid': participant['puuid'],
-                'match_id': match['metadata']['match_id'],
-                'placement': participant['placement'],
-                'level': participant['level'],
-                'total_damage_to_players': participant['total_damage_to_players'],
-                'riotidgamename': participant['riotIdGameName'],
-                'riotidtagline': participant['riotIdTagline'],
-                'partner_group_id': partner_group_id,
-                'gold_left': participant['gold_left'],
-                'last_round': participant['last_round'],
-                'players_eliminated': participant['players_eliminated'],
-                'time_eliminated': participant['time_eliminated'],
-                'win': participant['win']
-            }
-
-            def insert_participants_data(connection):
-                insert_data_batch(connection, 'Participants', [participants_data], ['puuid', 'match_id'])
-
-            connect(insert_participants_data)
-
-            # Collect units data for batch insert
-            units_data_list = []
-            character_counts = defaultdict(int)
-            for unit in participant['units']:
-                character_counts[unit['character_id']] += 1
-
-            character_indices = defaultdict(int)
-            for unit in participant['units']:
-                character_id = unit['character_id']
-                if character_counts[character_id] > 1:
-                    character_indices[character_id] += 1
-                    unit['unit_index'] = character_indices[character_id]
-                else:
-                    unit['unit_index'] = 0
-
-                units_data = {
-                    'character_id': unit['character_id'],
+            if participant['puuid'] in puuid_list:
+                partner_group_id = participant.get('partner_group_id', None)
+                participants_data = {
                     'puuid': participant['puuid'],
-                    'unit_name': unit['name'],
-                    'tier': unit['tier'],
                     'match_id': match['metadata']['match_id'],
-                    'itemnames': unit['itemNames'],
-                    'unit_index': unit['unit_index']
+                    'placement': participant['placement'],
+                    'level': participant['level'],
+                    'total_damage_to_players': participant['total_damage_to_players'],
+                    'riotidgamename': participant['riotIdGameName'],
+                    'riotidtagline': participant['riotIdTagline'],
+                    'partner_group_id': partner_group_id,
+                    'gold_left': participant['gold_left'],
+                    'last_round': participant['last_round'],
+                    'players_eliminated': participant['players_eliminated'],
+                    'time_eliminated': participant['time_eliminated'],
+                    'win': participant['win']
                 }
-                units_data_list.append(units_data)
 
-            def insert_units_data(connection):
-                insert_data_batch(connection, 'Units', units_data_list, ['unit_index', 'puuid', 'match_id', 'character_id'])
+                def insert_participants_data(connection):
+                    insert_data_batch(connection, 'Participants', [participants_data], ['puuid', 'match_id'])
 
-            connect(insert_units_data)
+                connect(insert_participants_data)
 
-            # Collect traits data for batch insert
-            traits_data_list = []
-            for trait in participant['traits']:
-                traits_data = {
-                    'puuid': participant['puuid'],
-                    'trait_name': trait['name'],
-                    'tier_current': trait['tier_current'],
-                    'tier_total': trait['tier_total'],
-                    'match_id': match['metadata']['match_id'],
-                    'num_units': trait['num_units']
-                }
-                traits_data_list.append(traits_data)
+                # Collect units data for batch insert
+                units_data_list = []
+                character_counts = defaultdict(int)
+                for unit in participant['units']:
+                    character_counts[unit['character_id']] += 1
 
-            def insert_traits_data(connection):
-                insert_data_batch(connection, 'Traits', traits_data_list, ['trait_name', 'puuid', 'match_id'])
+                character_indices = defaultdict(int)
+                for unit in participant['units']:
+                    character_id = unit['character_id']
+                    if character_counts[character_id] > 1:
+                        character_indices[character_id] += 1
+                        unit['unit_index'] = character_indices[character_id]
+                    else:
+                        unit['unit_index'] = 0
 
-            connect(insert_traits_data)
+                    units_data = {
+                        'character_id': unit['character_id'],
+                        'puuid': participant['puuid'],
+                        'unit_name': unit['name'],
+                        'tier': unit['tier'],
+                        'match_id': match['metadata']['match_id'],
+                        'itemnames': unit['itemNames'],
+                        'unit_index': unit['unit_index']
+                    }
+                    units_data_list.append(units_data)
 
-puuid_list = [
-    'IqE3AGiAsBfKo44yi6SDC5N31XSRkQYoDtVNdeVYd6AjZoX0HM-0TdbnhLYP01hVrrEpFZmn1NDL9g',
-    'qiQLis_3Zapl6oxI8oHEbnuivAWoy3uRH06ToRLObMje4IUOKON-YK8TgHhqR-ed-OBQ_6Ei5gCVZg',
-    'COBBLmcIDuaarBHiGr_iFHjaeEw44q94z-sEuW2d-EEmraG3JR4_dxwELOl2qXlIpTwPglfc38zbrg',
-    'AbTNQqyAMULCRJNK5n7DNFwkdl4cMbDWOCN-N4dwno2FPmFhZQL4T7f245YUvpqqJgf7NZrx7vR5LA',
-    'Yw9FTrjrd-ODWl2o4dyAqW9mU_e7SHXzFGOfpRG_JkpMHxqHZpZLHO3pbtQ9b10sRbbCREgaU7A-_A']
+                def insert_units_data(connection):
+                    insert_data_batch(connection, 'Units', units_data_list, ['unit_index', 'puuid', 'match_id', 'character_id'])
+
+                connect(insert_units_data)
+
+                # Collect traits data for batch insert
+                traits_data_list = []
+                for trait in participant['traits']:
+                    traits_data = {
+                        'puuid': participant['puuid'],
+                        'trait_name': trait['name'],
+                        'tier_current': trait['tier_current'],
+                        'tier_total': trait['tier_total'],
+                        'match_id': match['metadata']['match_id'],
+                        'num_units': trait['num_units']
+                    }
+                    traits_data_list.append(traits_data)
+
+                def insert_traits_data(connection):
+                    insert_data_batch(connection, 'Traits', traits_data_list, ['trait_name', 'puuid', 'match_id'])
+
+                connect(insert_traits_data)
 
 for puuid in puuid_list:
     construct_data_groups(puuid, region)
