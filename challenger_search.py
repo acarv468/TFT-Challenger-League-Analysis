@@ -44,7 +44,7 @@ def get_challenger_leauge_puuid(region, api_key):
         response_body = response.json()
         entries = response_body['entries']
         puuid_list = [entry['puuid'] for entry in entries]  # Extract the puuid from each entry
-        print(puuid_list)
+        #print(puuid_list)
     except requests.exceptions.HTTPError as err:
         if err.response.status_code == 403:
             print("Error: Forbidden. Check your API key and permissions.")
@@ -57,4 +57,5 @@ def get_challenger_leauge_puuid(region, api_key):
     
     return puuid_list
 
-get_challenger_leauge_puuid(region, api_key)
+#test_list = get_challenger_leauge_puuid(region, api_key)
+# print(test_list)
