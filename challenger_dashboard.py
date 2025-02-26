@@ -45,6 +45,16 @@ traits_query = '''
     join matches m on m.match_id=t.match_id
     where m.tft_set_number=13;
 '''
+challenger_query = '''
+    select 
+        cl.puuid, p.riotidgamename, cl.leaguepoints, 
+        cl.rank, cl.wins, cl.losses, 
+        cl.veteran, cl.inactive, cl.freshblood, 
+        cl.hotstreak, cl.date
+    from challenger_league cl
+    join participants p on cl.puuid=p.puuid;
+'''
+
 ####
 # Need to clean data first
 ####
@@ -52,6 +62,53 @@ traits_query = '''
 # Get data from the database
 units_data = get_data_from_db(units_query)
 traits_data = get_data_from_db(traits_query)
+challenger_data = get_data_from_db(challenger_query)
+
+# Drop duplicates based on puuid and date
+challenger_data = challenger_data.drop_duplicates(subset=['puuid', 'date'])
+
+# Create leaderboard for top 10 riotidgamenames by leaguepoints
+leaderboard_data = challenger_data.sort_values(by='leaguepoints', ascending=False).head(10)
+leaderboard_data = leaderboard_data[['puuid', 'date', 'riotidgamename', 'leaguepoints', 'wins', 'losses']]
+
+# Convert the 'date' column to a string format that includes only the date part
+leaderboard_data['date'] = leaderboard_data['date'].dt.strftime('%Y-%m-%d')
+
+# Calculate win percentage and format it
+leaderboard_data['win_pct'] = (leaderboard_data['wins'] / (leaderboard_data['wins'] + leaderboard_data['losses'])) * 100
+leaderboard_data['win_pct'] = leaderboard_data['win_pct'].round(1).astype(str) + '%'
+
+leaderboard_data_display = leaderboard_data[['date', 'riotidgamename', 'leaguepoints', 'wins', 'losses']]
+
+st.markdown("""
+    <style>
+    .leaderboard-table {
+        font-family: Arial, sans-serif;
+        border-collapse: collapse;
+        width: 75%;
+        margin: 20px 0;
+        font-size: 18px;
+    }
+    .leaderboard-table td, .leaderboard-table th {
+        border: 1px solid #ddd;
+        padding: 12px;
+    }
+    .leaderboard-table tr:hover {
+        background-color: #A9A9A9;
+    }
+    .leaderboard-table th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #4CAF50;
+        color: white;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Display the leaderboard as a styled table
+st.markdown("<h2>Top 10 Players by League Points</h2>", unsafe_allow_html=True)
+st.markdown(leaderboard_data_display.to_html(classes='leaderboard-table', index=False), unsafe_allow_html=True)
 
 # Create two columns for filters
 filter_col1, filter_col2 = st.columns(2)
@@ -71,6 +128,15 @@ filtered_traits_data = traits_data[
     (traits_data['game_datetime'] >= pd.to_datetime(selected_date_range[0])) &
     (traits_data['game_datetime'] <= pd.to_datetime(selected_date_range[1]))
 ]
+
+# Create a dropdown selection for the riotidgamename
+selected_player = st.selectbox('Select Player', ['All'] + leaderboard_data['riotidgamename'].tolist())
+
+# Filter the data based on the selected player
+if selected_player != 'All':
+    selected_puuid = leaderboard_data[leaderboard_data['riotidgamename'] == selected_player]['puuid'].values[0]
+    filtered_units_data = filtered_units_data[filtered_units_data['puuid'] == selected_puuid]
+    filtered_traits_data = filtered_traits_data[filtered_traits_data['puuid'] == selected_puuid]
 
 # Count the occurrences of each character_id
 character_counts = filtered_units_data['character_id'].value_counts().reset_index()
@@ -136,4 +202,5 @@ st.plotly_chart(bar_chart3, use_container_width=True)
 # Display the filtered data in Streamlit
 st.write(filtered_units_data)
 st.write(filtered_traits_data)
+st.write(challenger_data)
 
