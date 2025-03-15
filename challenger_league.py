@@ -1,13 +1,5 @@
-import json
-import pandas as pd
-import requests
-import numpy as np
-from riotwatcher import ApiError
-import main
-from collections import defaultdict
 import psycopg2
 from config import config
-from datetime import datetime
 import challenger_search
 from dotenv import load_dotenv
 import os

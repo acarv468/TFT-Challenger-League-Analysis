@@ -1,9 +1,4 @@
-import json
-import pandas as pd
-import requests
-import numpy as np
 from riotwatcher import TftWatcher
-import main
 from collections import defaultdict
 import psycopg2
 from config import config
@@ -29,17 +24,13 @@ if not api_key:
 region = 'na1'
 print(f"Region: {region}")  # Debugging statement
 
-# Get the puuid list using the imported function
-# puuid_list = get_challenger_leauge_puuid(region, api_key)
-# print(f"PUUID List: {puuid_list}")  # Debugging statement
-
 # puuid_list = [
 #     'IqE3AGiAsBfKo44yi6SDC5N31XSRkQYoDtVNdeVYd6AjZoX0HM-0TdbnhLYP01hVrrEpFZmn1NDL9g',
 #     'qiQLis_3Zapl6oxI8oHEbnuivAWoy3uRH06ToRLObMje4IUOKON-YK8TgHhqR-ed-OBQ_6Ei5gCVZg',
 #     'COBBLmcIDuaarBHiGr_iFHjaeEw44q94z-sEuW2d-EEmraG3JR4_dxwELOl2qXlIpTwPglfc38zbrg',
 #     'AbTNQqyAMULCRJNK5n7DNFwkdl4cMbDWOCN-N4dwno2FPmFhZQL4T7f245YUvpqqJgf7NZrx7vR5LA',
 #     'Yw9FTrjrd-ODWl2o4dyAqW9mU_e7SHXzFGOfpRG_JkpMHxqHZpZLHO3pbtQ9b10sRbbCREgaU7A-_A']
-#puuid_list = get_challenger_leauge_puuid(api_key, region)
+
 puuid_list = challenger_search.get_challenger_leauge_puuid(region, api_key)
 print(f"PUUID List: {puuid_list}")  # Debugging statement
 

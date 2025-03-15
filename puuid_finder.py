@@ -1,13 +1,4 @@
-import json
-import pandas as pd
 import requests
-import numpy as np
-from riotwatcher import ApiError
-import main
-from collections import defaultdict
-import psycopg2
-from config import config
-from datetime import datetime
 from dotenv import load_dotenv
 import os
 
@@ -20,7 +11,7 @@ print(f"Loaded API Key: {api_key}")  # Debugging statement
 if not api_key:
     raise ValueError("API key must be set in the .env file")
 region = 'americas'
-summoner_name = 'waxade'
+summoner_name = ''
 tagline = 'na1'
 
 # To get PUUID from Riot ID and tagline
@@ -64,4 +55,4 @@ def get_puuid(region, summoner_name, tagline, api_key):
     
     return puuid
 
-get_puuid(region, summoner_name, tagline, api_key)
+#get_puuid(region, summoner_name, tagline, api_key)

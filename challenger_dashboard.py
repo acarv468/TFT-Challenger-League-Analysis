@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 from sqlalchemy import create_engine
 from config import config
 import plotly.express as px
@@ -92,56 +91,56 @@ leaderboard_data['win_pct'] = leaderboard_data['win_pct'].round(1).astype(str) +
 
 leaderboard_data_display = leaderboard_data[['date', 'riotidgamename', 'leaguepoints', 'wins', 'losses']]
 
-st.markdown("""
-    <style>
-    .leaderboard-table {
-        font-family: Arial, sans-serif;
-        border-collapse: collapse;
-        width: 75%;
-        margin: 20px 0;
-        font-size: 18px;
-    }
-    .leaderboard-table td, .leaderboard-table th {
-        border: 1px solid #ddd;
-        padding: 12px;
-    }
-    .leaderboard-table tr:hover {
-        background-color: #A9A9A9;
-    }
-    .leaderboard-table th {
-        padding-top: 12px;
-        padding-bottom: 12px;
-        text-align: left;
-        background-color: #1f77b4;
-        color: white;
-    }
-    </style>
-""", unsafe_allow_html=True)
+# st.markdown("""
+#     <style>
+#     .leaderboard-table {
+#         font-family: Arial, sans-serif;
+#         border-collapse: collapse;
+#         width: 75%;
+#         margin: 20px 0;
+#         font-size: 18px;
+#     }
+#     .leaderboard-table td, .leaderboard-table th {
+#         border: 1px solid #ddd;
+#         padding: 12px;
+#     }
+#     .leaderboard-table tr:hover {
+#         background-color: #A9A9A9;
+#     }
+#     .leaderboard-table th {
+#         padding-top: 12px;
+#         padding-bottom: 12px;
+#         text-align: left;
+#         background-color: #1f77b4;
+#         color: white;
+#     }
+#     </style>
+# """, unsafe_allow_html=True)
 
-# Display the leaderboard as a styled table
-st.markdown("<h2>Top 10 Players by League Points</h2>", unsafe_allow_html=True)
-st.write("The table below shows the top 10 players in the Challenger league based on league points.")
-st.markdown(leaderboard_data_display.to_html(classes='leaderboard-table', index=False), unsafe_allow_html=True)
+# # Display the leaderboard as a styled table
+# st.markdown("<h2>Top 10 Players by League Points</h2>", unsafe_allow_html=True)
+# st.write("The table below shows the top 10 players in the Challenger league based on league points.")
+# st.markdown(leaderboard_data_display.to_html(classes='leaderboard-table', index=False), unsafe_allow_html=True)
 
-# Create a line graph for the top 10 riotidgamenames by leaguepoints
+# # Create a line graph for the top 10 riotidgamenames by leaguepoints
 top_10_puuids = leaderboard_data['puuid'].tolist()
 top_10_data = challenger_data[challenger_data['puuid'].isin(top_10_puuids)]
 
-# Convert the 'date' column to a string format that includes only the date part
+# # Convert the 'date' column to a string format that includes only the date part
 
-line_chart = px.line(
-    top_10_data,
-    x='date',
-    y='leaguepoints',
-    color='riotidgamename',
-    title='League Points Over Time for Top 10 Players',
-    labels={'date': 'Date', 'leaguepoints': 'League Points', 'riotidgamename': 'Player'}
-)
-line_chart.update_layout(xaxis_title='Date', yaxis_title='League Points')
-line_chart.update_xaxes(tickformat='%Y-%m-%d', tickmode='linear')
+# line_chart = px.line(
+#     top_10_data,
+#     x='date',
+#     y='leaguepoints',
+#     color='riotidgamename',
+#     title='League Points Over Time for Top 10 Players',
+#     labels={'date': 'Date', 'leaguepoints': 'League Points', 'riotidgamename': 'Player'}
+# )
+# line_chart.update_layout(xaxis_title='Date', yaxis_title='League Points')
+# line_chart.update_xaxes(tickformat='%Y-%m-%d', tickmode='linear')
 
-# Display the line chart in Streamlit
-st.plotly_chart(line_chart, use_container_width=True)
+# # Display the line chart in Streamlit
+# st.plotly_chart(line_chart, use_container_width=True)
 
 # Create two columns for filters
 filter_col1, filter_col2 = st.columns(2)
@@ -174,8 +173,14 @@ if selected_player != 'All':
 # Count the occurrences of each character_id and tier
 character_tier_counts = filtered_units_data.groupby(['character_id', 'tier']).size().reset_index(name='count')
 
-# Sort the character_tier_counts DataFrame by count in descending order
-character_tier_counts = character_tier_counts.sort_values(by='count', ascending=False)
+# Aggregate the counts by character_id to get the total counts
+total_counts = character_tier_counts.groupby('character_id')['count'].sum().reset_index(name='total_count')
+
+# Merge the aggregated counts back with the original character_tier_counts DataFrame
+character_tier_counts = character_tier_counts.merge(total_counts, on='character_id')
+
+# Sort the character_tier_counts DataFrame by total_count in descending order and then by tier in ascending order
+character_tier_counts = character_tier_counts.sort_values(by=['total_count', 'tier'], ascending=[False, True])
 
 # Create stacked bar chart for the count of each character_id with tier as color
 bar_chart1 = px.bar(
@@ -191,6 +196,10 @@ bar_chart1.update_layout(xaxis_title='Unit', yaxis_title='Times Used', barmode='
 # Count the occurrences of each trait_name
 trait_counts = filtered_traits_data['trait_name'].value_counts().reset_index()
 trait_counts.columns = ['trait_name', 'count']
+
+# Clean Trait names
+trait_counts['trait_name'] = trait_counts['trait_name'].replace('Warband', 'Conqueror')
+trait_counts['trait_name'] = trait_counts['trait_name'].replace('Cabal', 'Black Rose')
 
 # Create bar chart for the count of each trait_name
 bar_chart2 = px.bar(
@@ -208,7 +217,8 @@ col1.plotly_chart(bar_chart1, use_container_width=True)
 col2.plotly_chart(bar_chart2, use_container_width=True)
 
 # Single-select filter for character_id
-selected_character = st.selectbox('Select Unit', character_tier_counts['character_id'])
+unique_character_ids = character_tier_counts['character_id'].unique()
+selected_character = st.selectbox('Select Unit', unique_character_ids)
 
 # Filter items_data based on selected character_id
 items_data = filtered_units_data.explode('itemnames')
@@ -216,6 +226,9 @@ filtered_items_data = items_data[items_data['character_id'] == selected_characte
 
 filtered_items_data['itemnames'] = filtered_items_data['itemnames'].str.replace('TFT_Item_', '').str.capitalize()
 filtered_items_data['itemnames'] = filtered_items_data['itemnames'].str.replace('Tft13_item_', '').str.capitalize()
+
+# Replace "Frozenheart" with "Protectorsvow"
+filtered_items_data['itemnames'] = filtered_items_data['itemnames'].replace('Frozenheart', 'Protectorsvow')
 
 # Count the occurrences of each item for the selected character_id
 items_counts = filtered_items_data['itemnames'].value_counts().reset_index()

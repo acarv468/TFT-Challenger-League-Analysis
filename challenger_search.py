@@ -1,12 +1,4 @@
-import json
-import pandas as pd
 import requests
-import numpy as np
-from riotwatcher import ApiError
-import main
-from collections import defaultdict
-import psycopg2
-from config import config
 from datetime import datetime
 from dotenv import load_dotenv
 import os
@@ -21,15 +13,6 @@ if not api_key:
     raise ValueError("API key must be set in the .env file")
 
 region = 'na1'
-
-# To get PUUID from Riot ID and tagline
-# Construct the URL for the endpoint
-#url = f"https://{region}.api.riotgames.com/tft/league/v1/challenger?queue=RANKDED_TFT&api_key={api_key}"
-
-# Set the headers with the API key
-# headers = {
-#     "X-Riot-Token": api_key
-# }
 
 def get_challenger_leauge_puuid(region, api_key):
     # Construct the URL for the endpoint

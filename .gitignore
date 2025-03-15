@@ -170,8 +170,8 @@ cython_debug/
 #.idea/
 
 # PyPI configuration file
-<<<<<<< HEAD
 .pypirc
-=======
-.pypirc
->>>>>>> b9e89c99c79dddc34c4c6a4213695fb579e97626
+
+# Draft files
+tft_streamlit_dashboard.py
+main.py
