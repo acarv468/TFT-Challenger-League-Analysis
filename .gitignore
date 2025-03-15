@@ -173,5 +173,5 @@ cython_debug/
 .pypirc
 
 # Draft files
-tft_streamlit_dashboard.py
-main.py
+[tft_streamlit_dashboard.py]
+[main.py]
